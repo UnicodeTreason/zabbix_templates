@@ -1,0 +1,221 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-05-31T10:15:52Z'
+  groups:
+    -
+      name: Zabbix/Template/Connection
+  templates:
+    -
+      template: 'Connection - IETF ICMP Ping'
+      name: 'Connection - IETF ICMP Ping'
+      groups:
+        -
+          name: Zabbix/Template/Connection
+      applications:
+        -
+          name: 'Connection - IETF ICMP Ping'
+      items:
+        -
+          name: 'ICMP Ping - Packet Loss'
+          type: SIMPLE
+          key: 'icmppingloss[{HOST.CONN},{$CONN.IETF.ICMP.PING.CONF.PACKETS},{$CONN.IETF.ICMP.PING.CONF.INTVL},{$CONN.IETF.ICMP.PING.CONF.SIZE},{$CONN.IETF.ICMP.PING.CONF.TIMEOUT}]'
+          delay: '{$CONN.IETF.ICMP.PING.ITEM.INTVL}'
+          history: '{$CONN.IETF.ICMP.PING.PERIOD.HISTORY}'
+          trends: '{$CONN.IETF.ICMP.PING.PERIOD.TRENDS}'
+          value_type: FLOAT
+          units: '%'
+          description: 'This item contains the ICMP Ping packet loss as a percentage.'
+          applications:
+            -
+              name: 'Connection - IETF ICMP Ping'
+          request_method: POST
+        -
+          name: 'ICMP Ping - Response Time'
+          type: SIMPLE
+          key: 'icmppingsec[{HOST.CONN},{$CONN.IETF.ICMP.PING.CONF.PACKETS},{$CONN.IETF.ICMP.PING.CONF.INTVL},{$CONN.IETF.ICMP.PING.CONF.SIZE},{$CONN.IETF.ICMP.PING.CONF.TIMEOUT},{$CONN.IETF.ICMP.PING.CONF.MODE}]'
+          delay: '{$CONN.IETF.ICMP.PING.ITEM.INTVL}'
+          history: '{$CONN.IETF.ICMP.PING.PERIOD.HISTORY}'
+          trends: '{$CONN.IETF.ICMP.PING.PERIOD.TRENDS}'
+          value_type: FLOAT
+          units: s
+          description: 'This item contains the average ICMP Ping response time in seconds.'
+          applications:
+            -
+              name: 'Connection - IETF ICMP Ping'
+          request_method: POST
+        -
+          name: 'ICMP Ping - Status'
+          type: SIMPLE
+          key: 'icmpping[{HOST.CONN},{$CONN.IETF.ICMP.PING.CONF.PACKETS},{$CONN.IETF.ICMP.PING.CONF.INTVL},{$CONN.IETF.ICMP.PING.CONF.SIZE},{$CONN.IETF.ICMP.PING.CONF.TIMEOUT}]'
+          delay: '{$CONN.IETF.ICMP.PING.ITEM.INTVL}'
+          history: '{$CONN.IETF.ICMP.PING.PERIOD.HISTORY}'
+          trends: '{$CONN.IETF.ICMP.PING.PERIOD.TRENDS}'
+          description: 'This item contains the ICMP Ping status.'
+          applications:
+            -
+              name: 'Connection - IETF ICMP Ping'
+          valuemap:
+            name: 'Generic - Down/Up Status'
+          request_method: POST
+          triggers:
+            -
+              expression: '{last()}=0'
+              name: 'Dependency - ICMP Ping Status'
+              description: |
+                Problem Conditions:
+                ICMP Ping has 0 successes (1) recorded for the last sample.
+              manual_close: 'YES'
+              tags:
+                -
+                  tag: event_class
+                  value: Status
+                -
+                  tag: event_trigger
+                  value: 'Dependency - ICMP Ping Status'
+                -
+                  tag: event_trigger_instance
+                  value: None
+                -
+                  tag: event_trigger_toggle
+                  value: 'False'
+            -
+              expression: |
+                {$CONN.IETF.ICMP.PING.MON.STATUS} = 1
+                and
+                {count({$CONN.IETF.ICMP.PING.MON.STATUS.SAMPLES},1,eq)}=0
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: |
+                {$CONN.IETF.ICMP.PING.MON.STATUS} = 0
+                or
+                {count({$CONN.IETF.ICMP.PING.MON.STATUS.SAMPLES.RECOVERY},0,eq)}=0
+              name: 'ICMP Ping Status'
+              priority: DISASTER
+              description: |
+                Problem Conditions:
+                Monitoring is enabled by {$CONN.IETF.ICMP.PING.MON.STATUS} being set to 1
+                and
+                ICMP Ping has 0 successes (1) recorded for the last {$CONN.IETF.ICMP.PING.MON.STATUS.SAMPLES} samples.
+
+                Problem Recovery Conditions:
+                Monitoring is disabled by {$CONN.IETF.ICMP.PING.MON.STATUS} being set to 0
+                or
+                ICMP Ping has 3 successes (1) recorded for the last {$CONN.IETF.ICMP.PING.MON.STATUS.SAMPLES} samples.
+              manual_close: 'YES'
+              tags:
+                -
+                  tag: event_class
+                  value: Status
+                -
+                  tag: event_trigger
+                  value: 'ICMP Ping Status'
+                -
+                  tag: event_trigger_instance
+                  value: None
+                -
+                  tag: event_trigger_toggle
+                  value: 'False'
+      tags:
+        -
+          tag: class1
+          value: Connection
+        -
+          tag: class2
+          value: IETF
+        -
+          tag: class3
+          value: ICMP
+        -
+          tag: class4
+          value: Ping
+      macros:
+        -
+          macro: '{$CONN.IETF.ICMP.PING.CONF.INTVL}'
+          value: '1000'
+          description: 'Time between successive packets (ms)'
+        -
+          macro: '{$CONN.IETF.ICMP.PING.CONF.MODE}'
+          value: avg
+          description: 'Mode for value calculation [Options: min, max, avg] (string)'
+        -
+          macro: '{$CONN.IETF.ICMP.PING.CONF.PACKETS}'
+          value: '5'
+          description: 'Number of packets to send (int)'
+        -
+          macro: '{$CONN.IETF.ICMP.PING.CONF.SIZE}'
+          value: '64'
+          description: 'Size of packets to send (int)'
+        -
+          macro: '{$CONN.IETF.ICMP.PING.CONF.TIMEOUT}'
+          value: '1000'
+          description: 'Time to wait for timeout (ms)'
+        -
+          macro: '{$CONN.IETF.ICMP.PING.ITEM.INTVL}'
+          value: 1m
+          description: 'Item collection interval (minutes)'
+        -
+          macro: '{$CONN.IETF.ICMP.PING.MON.STATUS}'
+          value: '1'
+          description: 'Trigger monitoring toggle [Options: 1,0] (int)'
+        -
+          macro: '{$CONN.IETF.ICMP.PING.MON.STATUS.SAMPLES}'
+          value: '#3'
+          description: 'Trigger problem samples (count)'
+        -
+          macro: '{$CONN.IETF.ICMP.PING.MON.STATUS.SAMPLES.RECOVERY}'
+          value: '#3'
+          description: 'Trigger problem recovery samples (count)'
+        -
+          macro: '{$CONN.IETF.ICMP.PING.PERIOD.HISTORY}'
+          value: 7d
+          description: 'Item data history storage period (days)'
+        -
+          macro: '{$CONN.IETF.ICMP.PING.PERIOD.TRENDS}'
+          value: 365d
+          description: 'Item data trends storage period (days)'
+  graphs:
+    -
+      name: 'Connection - IETF ICMP Ping Packet Loss'
+      graph_items:
+        -
+          sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: FF0000
+          calc_fnc: ALL
+          item:
+            host: 'Connection - IETF ICMP Ping'
+            key: 'icmppingloss[{HOST.CONN},{$CONN.IETF.ICMP.PING.CONF.PACKETS},{$CONN.IETF.ICMP.PING.CONF.INTVL},{$CONN.IETF.ICMP.PING.CONF.SIZE},{$CONN.IETF.ICMP.PING.CONF.TIMEOUT}]'
+    -
+      name: 'Connection - IETF ICMP Ping Response Time'
+      graph_items:
+        -
+          sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: FF0000
+          calc_fnc: ALL
+          item:
+            host: 'Connection - IETF ICMP Ping'
+            key: 'icmppingsec[{HOST.CONN},{$CONN.IETF.ICMP.PING.CONF.PACKETS},{$CONN.IETF.ICMP.PING.CONF.INTVL},{$CONN.IETF.ICMP.PING.CONF.SIZE},{$CONN.IETF.ICMP.PING.CONF.TIMEOUT},{$CONN.IETF.ICMP.PING.CONF.MODE}]'
+    -
+      name: 'Connection - IETF ICMP Ping Status'
+      yaxismax: '1'
+      ymin_type_1: FIXED
+      ymax_type_1: FIXED
+      graph_items:
+        -
+          sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: 199C0D
+          calc_fnc: ALL
+          item:
+            host: 'Connection - IETF ICMP Ping'
+            key: 'icmpping[{HOST.CONN},{$CONN.IETF.ICMP.PING.CONF.PACKETS},{$CONN.IETF.ICMP.PING.CONF.INTVL},{$CONN.IETF.ICMP.PING.CONF.SIZE},{$CONN.IETF.ICMP.PING.CONF.TIMEOUT}]'
+  value_maps:
+    -
+      name: 'Generic - Down/Up Status'
+      mappings:
+        -
+          value: '0'
+          newvalue: Down
+        -
+          value: '1'
+          newvalue: Up
